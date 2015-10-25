@@ -1,31 +1,33 @@
 {
-	"id": "nodebb-plugin-reply-then-see",
-	"url": "https://github.com/LYLLLRH/nodebb-plugin-reply-then-see",
-	"library": "./library.js",
-	"hooks": [
-		{
-			"hook": "static:app.load","method":"init"
-		},
-		{
-			"hook": "filter:post.getPosts", "method": "getPostContent"
-
-		},
-		{
-			"hook": "filter:post.save", "method": "setReplyerId"
-		},
-		{
-			"hook": "filter:admin.header.build", "method": "addAdminNavigation"
-		}
-	],
-	"staticDirs": {
-		"static": "./static"
+  "id": "nodebb-plugin-reply-then-see",
+  "url": "https://github.com/LYLLLRH/nodebb-plugin-reply-then-see",
+  "library": "./library.js",
+  "hooks": [
+	{
+	  "hook": "static:app.load", "method": "init"
 	},
-	"less": [
-		"static/style.less"
-	],
-	"scripts": [
-		"static/lib/main.js",
-		"static/lib/admin.js"
-	],
-	"templates": "static/templates"
+	{
+	  "hook": "filter:post.getPosts", "method": "getPostContent"
+
+	},
+	{
+	  "hook": "filter:post.save", "method": "setReplyerId"
+	},
+	{
+	  "hook": "filter:admin.header.build", "method": "addAdminNavigation"
+	},
+	{
+	  "hook": "filter:post.getPostSummaryByPids", "method": "getPostSummaryByPids"
+	}
+  ],
+  "staticDirs": {
+	"static": "./static"
+  },
+  "less": [
+	"static/style.less"
+  ],
+  "scripts": [
+	"static/lib/admin.js"
+  ],
+  "templates": "static/templates"
 }
