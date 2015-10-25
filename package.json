@@ -12,10 +12,7 @@
     "plugin",
     "reply-to-see"
   ],
-  "author": {
-    "name": "LYLLLRH",
-    "email": "LYLLLRH@163.com"
-  },
+  "author": "gogoout",
   "license": "MIT",
   "nbbpm": {
     "compatibility": "^0.6.0 || ^0.7.0 || ^0.8.0"
