@@ -34,11 +34,11 @@ function replyToSeeFilter(uid, post, callback) {
 					}
 				}
 
-				winston.info('[RtoS] match: ' + match);
+//				winston.info('[RtoS] match: ' + match);
 				var $ = cheerio.load(post.content, {
 					decodeEntities: false
 				});
-				winston.info('[RtoS] content before:\n' + post.content);
+//				winston.info('[RtoS] content before:\n' + post.content);
 				if (!match) {
 					$('p:contains("[hide]")').each(function (idx, element) {
 						var $ele = $(element);
@@ -60,7 +60,7 @@ function replyToSeeFilter(uid, post, callback) {
 					$('p:contains("[/hide]")').remove();
 				}
 				post.content = $.html();
-				winston.info('[RtoS] content after:\n' + post.content);
+//				winston.info('[RtoS] content after:\n' + post.content);
 				callback(null, post);
 			})
 		}
