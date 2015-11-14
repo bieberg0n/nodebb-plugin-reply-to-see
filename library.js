@@ -18,7 +18,7 @@ var controllers = require('./lib/controllers'),
 
 function replyToSeeFilter(uid, post, callback) {
 	Topics.getTopicField(parseInt(post.tid, 10), 'replyerIds', function (err, replyerIds) {
-		var isRtos = /<p class="rtos">/.test(post.content);
+		var isRtos = /<p>\[hide]\s*<\/p>/.test(post.content);
 		if (isRtos) {
 			winston.info('[RtoS] get rtos post, tid : ' + post.tid);
 			var match = false;
@@ -35,21 +35,33 @@ function replyToSeeFilter(uid, post, callback) {
 				}
 
 				winston.info('[RtoS] match: ' + match);
+				var $ = cheerio.load(post.content, {
+					decodeEntities: false
+				});
+				winston.info('[RtoS] content before:\n' + post.content);
 				if (!match) {
-//					Meta.settings.get('reply2see', function (err, settings) {
-//					});
-//					winston.info('[RtoS] content before:\n' + post.content);
-					var $ = cheerio.load(post.content);
-					$('p.rtos').each(function (idx, element) {
-						$(element).replaceWith($('<code class="rtos">[内容回复后并刷新后可见！]</code>'));
+					$('p:contains("[hide]")').each(function (idx, element) {
+						var $ele = $(element);
+						$ele.nextUntil('p:contains("[/hide]")').remove();
+						// below is [/hide]
+						$ele.next().remove();
+						$ele.replaceWith($('<code class="rtos">[内容回复后并刷新后可见！]</code>'));
 					});
-					post.content = $.html();
-//					winston.info('[RtoS] content after:\n' + post.content);
-					callback(null, post);
 				}
 				else {
-					callback(null, post);
+					$('p:contains("[hide]")').each(function (idx, element) {
+						var $ele = $(element);
+						var hideContent = $ele.nextUntil('p:contains("[/hide]")');
+//						winston.info('[RtoS] hide content :\n' + hideContent);
+						$ele.after('<div class="rtos"></div>');
+						$ele.next().append(hideContent);
+						$ele.remove();
+					});
+					$('p:contains("[/hide]")').remove();
 				}
+				post.content = $.html();
+				winston.info('[RtoS] content after:\n' + post.content);
+				callback(null, post);
 			})
 		}
 		else {
