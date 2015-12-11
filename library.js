@@ -113,11 +113,30 @@ plugin.addAdminNavigation = function (header, callback) {
 	callback(null, header);
 };
 
-plugin.getPostSummaryByPids = function (data, callback) {
-	async.each(data.posts, function (post, aCallback) {
-		replyToSeeFilter(data.uid, post, aCallback);
-	}, function (err) {
-		callback(err, data);
+plugin.getCategories = function (data, callback) {
+//	winston.info('[RtoS] filter summary post:\n' + data);
+	var pids = [],
+		pidMap = {};
+	data.templateData.categories.forEach(function (category) {
+		if (category.posts[0]) {
+			pids.push(category.posts[0].pid);
+			pidMap[category.posts[0].pid] = category.posts[0];
+		}
+	});
+
+	Posts.getPostsFields(pids, ['pid', 'tid'], function (err, posts) {
+		posts.forEach(function (post) {
+			pidMap[post.pid].tid = post.tid;
+		});
+
+		async.each(data.templateData.categories, function (category, aCallback) {
+			if (category.posts[0]) {
+				return replyToSeeFilter(data.req.uid, category.posts[0], aCallback);
+			}
+			aCallback();
+		}, function (err) {
+			callback(err, data);
+		});
 	});
 };
 

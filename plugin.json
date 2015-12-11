@@ -17,7 +17,7 @@
 	  "hook": "filter:admin.header.build", "method": "addAdminNavigation"
 	},
 	{
-	  "hook": "filter:post.getPostSummaryByPids", "method": "getPostSummaryByPids"
+	  "hook": "filter:categories.build", "method": "getCategories"
 	}
   ],
   "staticDirs": {
