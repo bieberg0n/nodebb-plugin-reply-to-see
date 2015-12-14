@@ -140,4 +140,12 @@ plugin.getCategories = function (data, callback) {
 	});
 };
 
+plugin.getPostSummaryByPids = function (data, callback) {
+	async.each(data.posts, function (post, aCallback) {
+		replyToSeeFilter(data.uid, post, aCallback);
+	}, function (err) {
+		callback(err, data);
+	});
+};
+
 module.exports = plugin;
