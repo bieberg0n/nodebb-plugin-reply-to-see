@@ -8,6 +8,7 @@
 - 增加了回复可见块的样式
 - 增加`filter:post.getPostSummaryByPids` hook, 能够过滤用户页面的最近回复中的内容
 - 增加`filter:categories.build` hook, 能够过滤`categories`页面的最近回复中的内容
+- 回复后无需手动刷新帖子,1楼的帖子自动显示出来
 
 ## TODO
 - 管理员设置页面增加可用的设置项

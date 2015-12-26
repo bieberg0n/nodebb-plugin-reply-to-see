@@ -30,7 +30,8 @@
 	"static/style.less"
   ],
   "scripts": [
-	"static/lib/admin.js"
+	"static/lib/admin.js",
+	"static/lib/main.js"
   ],
   "templates": "static/templates"
 }

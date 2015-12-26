@@ -16,6 +16,34 @@ var controllers = require('./lib/controllers'),
 
 	plugin = {};
 
+function parsePost(post, match) {
+//				winston.info('[RtoS] match: ' + match);
+	var $ = cheerio.load(post.content, {
+		decodeEntities: false
+	});
+//				winston.info('[RtoS] content before:\n' + post.content);
+	if (!match) {
+		$('p:contains("[hide]")').each(function (idx, element) {
+			var $ele = $(element);
+			$ele.nextUntil('p:contains("[/hide]")').remove();
+			// below is [/hide]
+			$ele.next().remove();
+			$ele.replaceWith($('<code class="rtos">[内容回复后可见！]</code>'));
+		});
+	}
+	else {
+		$('p:contains("[hide]")').each(function (idx, element) {
+			var $ele = $(element);
+			var hideContent = $ele.nextUntil('p:contains("[/hide]")');
+//						winston.info('[RtoS] hide content :\n' + hideContent);
+			$ele.after('<div class="rtos"></div>');
+			$ele.next().append(hideContent);
+			$ele.remove();
+		});
+		$('p:contains("[/hide]")').remove();
+	}
+	post.content = $.html();
+}
 function replyToSeeFilter(uid, post, callback) {
 	Topics.getTopicField(parseInt(post.tid, 10), 'replyerIds', function (err, replyerIds) {
 		var isRtos = /<p>\[hide]\s*<\/p>/.test(post.content);
@@ -33,33 +61,7 @@ function replyToSeeFilter(uid, post, callback) {
 						}
 					}
 				}
-
-//				winston.info('[RtoS] match: ' + match);
-				var $ = cheerio.load(post.content, {
-					decodeEntities: false
-				});
-//				winston.info('[RtoS] content before:\n' + post.content);
-				if (!match) {
-					$('p:contains("[hide]")').each(function (idx, element) {
-						var $ele = $(element);
-						$ele.nextUntil('p:contains("[/hide]")').remove();
-						// below is [/hide]
-						$ele.next().remove();
-						$ele.replaceWith($('<code class="rtos">[内容回复后并刷新后可见！]</code>'));
-					});
-				}
-				else {
-					$('p:contains("[hide]")').each(function (idx, element) {
-						var $ele = $(element);
-						var hideContent = $ele.nextUntil('p:contains("[/hide]")');
-//						winston.info('[RtoS] hide content :\n' + hideContent);
-						$ele.after('<div class="rtos"></div>');
-						$ele.next().append(hideContent);
-						$ele.remove();
-					});
-					$('p:contains("[/hide]")').remove();
-				}
-				post.content = $.html();
+				parsePost(post, match);
 //				winston.info('[RtoS] content after:\n' + post.content);
 				callback(null, post);
 			})
@@ -68,6 +70,25 @@ function replyToSeeFilter(uid, post, callback) {
 			callback(null, post);
 		}
 	})
+}
+
+function handleSocketIO() {
+	SocketPlugins.replyToSee = {};
+
+	SocketPlugins.replyToSee.renderTopic = function (socket, data, callback) {
+		async.waterfall([
+			async.apply(Topics.getPids, data.tid),
+			function (pids, aCallback) {
+				return Posts.getPostsByPids([pids[0]], socket.uid, aCallback);
+			}
+		], function (err, posts) {
+			if (err) {
+				return callback(err);
+			}
+			parsePost(posts[0], true);
+			return callback(null, posts[0]);
+		});
+	};
 }
 
 
@@ -82,6 +103,7 @@ plugin.init = function (params, callback) {
 	router.get('/admin/plugins/reply2see', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
 	router.get('/api/admin/plugins/reply2see', controllers.renderAdminPage);
 
+	handleSocketIO();
 	callback();
 };
 
