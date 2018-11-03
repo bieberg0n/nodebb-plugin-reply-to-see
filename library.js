@@ -12,41 +12,23 @@ var controllers = require('./lib/controllers'),
 	async = module.parent.require('async'),
 	_ = module.parent.require('underscore'),
 	SocketPlugins = module.parent.require('./socket.io/plugins'),
-	cheerio = require('cheerio'),
+	// cheerio = require('cheerio'),
 
 	plugin = {};
 
 function parsePost(post, match) {
-//				winston.info('[RtoS] match: ' + match);
-	var $ = cheerio.load(post.content, {
-		decodeEntities: false
-	});
-//				winston.info('[RtoS] content before:\n' + post.content);
+	var content = post.content
 	if (!match) {
-		$('p:contains("[hide]")').each(function (idx, element) {
-			var $ele = $(element);
-			$ele.nextUntil('p:contains("[/hide]")').remove();
-			// below is [/hide]
-			$ele.next().remove();
-			$ele.replaceWith($('<code class="rtos">[内容回复后可见！]</code>'));
-		});
+		content = content.split('\n').join('%0A').replace(/\[hide].*?\[\/hide]/gm, '<code class="rtos">[内容回复后可见！]</code>').split('%0A').join('\n')
 	}
 	else {
-		$('p:contains("[hide]")').each(function (idx, element) {
-			var $ele = $(element);
-			var hideContent = $ele.nextUntil('p:contains("[/hide]")');
-//						winston.info('[RtoS] hide content :\n' + hideContent);
-			$ele.after('<div class="rtos"></div>');
-			$ele.next().append(hideContent);
-			$ele.remove();
-		});
-		$('p:contains("[/hide]")').remove();
+		content = content.replace(/\[hide]/g, '<div class="rtos">').replace(/\[\/hide]/g, '</div>')
 	}
-	post.content = $.html();
+	post.content = content
 }
 function replyToSeeFilter(uid, post, callback) {
 	Topics.getTopicField(parseInt(post.tid, 10), 'replyerIds', function (err, replyerIds) {
-		var isRtos = /<p>\[hide]\s*<\/p>/.test(post.content);
+		var isRtos = /\[hide]\s*/.test(post.content);
 		if (isRtos) {
 			winston.info('[RtoS] get rtos post, tid : ' + post.tid);
 			var match = false;
